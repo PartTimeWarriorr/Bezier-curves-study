@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #container {
+            width: 400px;
+            /* Adjust the width of the container */
+            height: 400px;
+            /* Adjust the height of the container */
+            border: 1px solid black;
+            position: relative;
+            margin: auto;
+            overflow: hidden;
+            /* Ensure points stay within the container */
+            background-color: aquamarine;
+            user-select: none;
+        }
+
+        #myCanvas {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: auto;
+            pointer-events: none;
+        }
+
+        .draggableDot {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            cursor: grab;
+        }
+
+        /*
+        .controlDot
+        {
+            width: 15px;
+            height: 15px;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+        } */
+
+        /* #mySlider
+        {
+
+        } */
+    </style>
+    <title>Draggable Dots</title>
+</head>
+
+<body>
+    <div id="container">
+        <!-- Points will be added here -->
+        <canvas id="myCanvas">
+            <!-- Lines will be drawn here -->
+        </canvas>
+
+    </div>
+
+    <div>
+        <button onclick="togglePolygon()">
+            Toggle Polygon
+        </button>
+
+        <input type="range" min="0.0" max="1.0" value="0.5" step="0.01" class="slider" id="mySlider">
+    </div>
+
+    <script src="pointsSorting.js"></script>
+    <script>
+        let currentDot = null;
+        let container = document.getElementById('container');
+        let canvas = document.getElementById("myCanvas");
+        let context = canvas.getContext("2d");
+        let points = [];
+        let t = 0.5;
+        let slider = document.getElementById("mySlider");
+        let polygonVisible = true;
+
+
+        container.addEventListener("click", handleDocumentClick);
+
+        resizeCanvas();
+
+        function handleDocumentClick(e) {
+            // Check if the clicked element is the container
+            if (e.target === container) {
+                createDiv(e.clientX - container.offsetLeft, e.clientY - container.offsetTop);
+            }
+        }
+
+        function createDiv(x, y) {
+            // Create a new div element
+            var newDiv = document.createElement("div");
+
+            // Set styles for the new div
+            newDiv.style.left = x - 10 + "px"; // TODO: Fix magic numbers
+            newDiv.style.top = y - 10 + "px";
+            newDiv.className = "draggableDot";
+
+
+
+            points.push({ xCoord: x, yCoord: y });
+
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawLines();
+            drawBezier();
+
+
+            // Add the new div to the container
+            container.appendChild(newDiv);
+
+        }
+
+        function handleMouseDown(e) {
+            if (e.target.classList.contains("draggableDot")) {
+                currentDot = e.target;
+                offsetX = e.clientX - currentDot.offsetLeft;
+                offsetY = e.clientY - currentDot.offsetTop;
+                currentDot.style.cursor = "grabbing";
+
+            }
+
+        }
+
+        function handleMouseMove(e) {
+            if (currentDot) {
+                var newX = e.clientX - offsetX;
+                var newY = e.clientY - offsetY;
+                // Ensure the dot stays within the container
+                newX = Math.min(container.offsetWidth - currentDot.offsetWidth, Math.max(0, newX));
+                newY = Math.min(container.offsetHeight - currentDot.offsetHeight, Math.max(0, newY));
+                currentDot.style.left = newX + "px";
+                currentDot.style.top = newY + "px";
+                updatePointPosition(currentDot, newX + 10, newY + 10);
+
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                drawLines();
+                drawBezier();
+            }
+
+        }
+
+        function updatePointPosition(point, newX, newY) {
+            let index = Array.prototype.indexOf.call(container.children, point); // Returns an index starting from 1, so should be decremented by 1 when adding to array
+            points[index - 1] = { xCoord: newX, yCoord: newY };
+        }
+
+        function drawLines() {
+            if (!polygonVisible) {
+                return;
+            }
+
+            context.lineWidth = 1.2;
+            context.beginPath();
+
+            for (let i = 0; i < points.length; ++i) {
+                if (i === 0) {
+                    context.moveTo(points[i].xCoord, points[i].yCoord);
+                }
+                else {
+                    context.lineTo(points[i].xCoord, points[i].yCoord);
+                }
+                context.stroke();
+            }
+
+            drawPolygon();
+
+        }
+
+        function drawPolygon() {
+            let nextLevelPoints = [];
+            let prevPoints = points;
+
+            do {
+
+                for (let i = 0; i < prevPoints.length - 1; ++i) {
+                    if (i === 0) {
+                        let newPoint = calculateNewPoint(prevPoints[i], prevPoints[i + 1]);
+                        nextLevelPoints.push(newPoint);
+                        context.moveTo(newPoint.xCoord, newPoint.yCoord);
+
+                        context.strokeStyle = "Blue";
+                        context.strokeRect(newPoint.xCoord - 7.5, newPoint.yCoord - 7.5, 15, 15); // TODO: Fix magic numbers
+                        context.strokeStyle = "Black";
+                    }
+                    else {
+                        let newPoint = calculateNewPoint(prevPoints[i], prevPoints[i + 1]);
+                        nextLevelPoints.push(newPoint);
+                        context.lineTo(newPoint.xCoord, newPoint.yCoord);
+
+                        context.strokeStyle = "Blue";
+                        context.strokeRect(newPoint.xCoord - 7.5, newPoint.yCoord - 7.5, 15, 15);
+                        context.strokeStyle = "Black";
+                    }
+                    context.stroke();
+                }
+
+                prevPoints = nextLevelPoints;
+                nextLevelPoints = [];
+
+            } while (prevPoints.length > 2);
+
+        }
+
+        function drawBezier() {
+            if (points.length < 3) {
+                return;
+            }
+
+            let tValue = 0.001;
+            let prevPoints = points;
+            let nextlevelPoints = [];
+
+            // context.beginPath();
+
+            while (tValue < 1) {
+                do {
+                    for (let i = 0; i < prevPoints.length - 1; ++i) {
+                        // let newPoint = {xCoord: prevPoints[i].xCoord * (1 - tValue) + prevPoints[i + 1].xCoord * tValue, yCoord: prevPoints[i].yCoord * (1 - tValue) + prevPoints[i + 1].yCoord * tValue};
+                        let newPoint = calculateNewBezierPoint(prevPoints[i], prevPoints[i + 1], tValue);
+                        nextlevelPoints.push(newPoint);
+
+                    }
+
+                    prevPoints = nextlevelPoints;
+                    nextlevelPoints = [];
+
+                } while (prevPoints.length > 2);
+
+                // let bezierPoint = {xCoord: prevPoints[0].xCoord * (1 - tValue) + prevPoints[1].xCoord * tValue, yCoord: prevPoints[0].yCoord * (1 - tValue) + prevPoints[1].yCoord * tValue};
+                let bezierPoint = calculateNewBezierPoint(prevPoints[0], prevPoints[1], tValue);
+
+                context.fillRect(bezierPoint.xCoord, bezierPoint.yCoord, 1, 1);
+
+                tValue += 0.001;
+
+                prevPoints = points;
+            }
+
+        }
+
+        // Overload 1 used for finding points on control polygon
+        function calculateNewPoint(point1, point2) {
+            return { xCoord: point1.xCoord * (1 - t) + point2.xCoord * t, yCoord: point1.yCoord * (1 - t) + point2.yCoord * t };
+        }
+
+        // Overload 2 used for finding points on bezier curve
+        function calculateNewBezierPoint(point1, point2, tValue) {
+            return { xCoord: point1.xCoord * (1 - tValue) + point2.xCoord * tValue, yCoord: point1.yCoord * (1 - tValue) + point2.yCoord * tValue };
+        }
+
+        function handleMouseUp() {
+            if (currentDot) {
+                currentDot.style.cursor = "grab";
+                currentDot = null;
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        // function hideCanvas()
+        // {
+        //     canvas.hidden = !canvas.hidden;
+        // }
+
+        function togglePolygon() {
+            polygonVisible = !polygonVisible;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawLines();
+            drawBezier();
+        }
+
+        slider.oninput = function () {
+            t = this.value;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawLines();
+            drawBezier();
+        }
+
+        document.addEventListener("mousedown", handleMouseDown);
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+    </script>
+</body>
+
+</html>
