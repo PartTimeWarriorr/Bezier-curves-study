@@ -11,13 +11,15 @@
             height: 400px;
             /* Adjust the height of the container */
             border: 1px solid black;
-            position: relative;
+            position: absolute;
             margin: auto;
             overflow: hidden;
             /* Ensure points stay within the container */
             background-color: aquamarine;
             user-select: none;
             z-index: 1;
+            display: inline-block;
+            left: 30%;
         }
 
         #myCanvas {
@@ -39,31 +41,92 @@
             z-index: 3;
         }
 
-
-        /* #mySlider
+        .displayDot
         {
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 3;
+        }
 
-        } */
+        #displayContainer
+        {
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+            position: absolute;
+            margin: auto;
+            overflow: hidden;
+            background-color:honeydew;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+            display: inline-block;
+            left: 52%;
+
+        }
+
+        #displayCanvas
+        {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: auto;
+            z-index: 2;
+        }
+
+        #wrapper
+        {
+            position: relative;
+            padding: 5vw;
+        }
+
+        #options
+        {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 400px;
+        }
+
+        #mySlider
+        {
+            /* display: inline-block; */
+        }
     </style>
     <title>Draggable Dots</title>
 </head>
 
 <body>
-    <div id="container">
-        <!-- Points will be added here -->
-        <canvas id="myCanvas">
-            <!-- Lines will be drawn here -->
-        </canvas>
+    <div id="wrapper">
 
+        <div id="container">
+            <!-- Points will be added here -->
+            <canvas id="myCanvas">
+                <!-- Lines will be drawn here -->
+            </canvas>
+    
+        </div>
+    
+        <div id="displayContainer">
+    
+        </div>
+    
     </div>
 
-    <div>
+    <div id="options">
+
         <button onclick="togglePolygon()">
             Toggle Polygon
         </button>
 
         <input type="range" min="0.0" max="1.0" value="0.5" step="0.01" class="slider" id="mySlider">
+
     </div>
+    
+    
 
     <script src="pointsSorting.js"></script>
     <script>
@@ -128,7 +191,6 @@
                 
                 // Insert div in correct poision
                 container.insertBefore(newDiv, container.childNodes[closestPointIndex + 1]);
-                console.log(points);
             }
 
 
