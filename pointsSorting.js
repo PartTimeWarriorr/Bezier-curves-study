@@ -39,3 +39,5 @@ function findClosestPointIndex(pointsArr, newPoint) {
 // let newP = { xCoord: 11, yCoord: 14 };
 
 // console.log(findClosestPointIndex(points, newP));
+
+// console.log(...points.slice(0, 2), newP, ...points.slice(2));

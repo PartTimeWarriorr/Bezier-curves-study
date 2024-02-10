@@ -17,6 +17,7 @@
             /* Ensure points stay within the container */
             background-color: aquamarine;
             user-select: none;
+            z-index: 1;
         }
 
         #myCanvas {
@@ -25,6 +26,7 @@
             height: 400px;
             margin: auto;
             pointer-events: none;
+            z-index: 2;
         }
 
         .draggableDot {
@@ -34,17 +36,9 @@
             border-radius: 50%;
             position: absolute;
             cursor: grab;
+            z-index: 3;
         }
 
-        /*
-        .controlDot
-        {
-            width: 15px;
-            height: 15px;
-            background-color: blue;
-            border-radius: 50%;
-            position: absolute;
-        } */
 
         /* #mySlider
         {
@@ -95,27 +89,55 @@
         }
 
         function createDiv(x, y) {
-            // Create a new div element
+            // Create new div element representing our new point
             var newDiv = document.createElement("div");
 
-            // Set styles for the new div
+            // Set styles for the new point
             newDiv.style.left = x - 10 + "px"; // TODO: Fix magic numbers
             newDiv.style.top = y - 10 + "px";
             newDiv.className = "draggableDot";
 
+            // Create new point object
+            let newPoint = {xCoord: x, yCoord: y};
 
+            if(points.length === 0)
+            {
+                // Add point object to empty array
+                points.push(newPoint);
 
-            points.push({ xCoord: x, yCoord: y });
+                // Update canvas
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                drawLines();
+                drawBezier();
 
+                // Insert div
+                container.insertBefore(newDiv, container.childNodes[1]);
 
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            drawLines();
-            drawBezier();
+            }
+            else
+            {
+                // Find closest point and insert new point after it in the array
+                let closestPointIndex = findClosestPointIndex(points, newPoint); 
+                const updatedPointsArr = [...points.slice(0, closestPointIndex), newPoint, ...points.slice(closestPointIndex)];
+                points = updatedPointsArr;
+
+                // Update canvas
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                drawLines();
+                drawBezier();
+                
+                // Insert div in correct poision
+                container.insertBefore(newDiv, container.childNodes[closestPointIndex + 1]);
+                console.log(points);
+            }
 
 
             // Add the new div to the container
-            container.appendChild(newDiv);
 
+        }
+
+        function insertAfter(newNode, existingNode) {
+            existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
         }
 
         function handleMouseDown(e) {
@@ -150,7 +172,7 @@
 
         function updatePointPosition(point, newX, newY) {
             let index = Array.prototype.indexOf.call(container.children, point); // Returns an index starting from 1, so should be decremented by 1 when adding to array
-            points[index - 1] = { xCoord: newX, yCoord: newY };
+            points[index] = { xCoord: newX, yCoord: newY };
         }
 
         function drawLines() {
@@ -215,7 +237,7 @@
                 return;
             }
 
-            let tValue = 0.001;
+            let tValue = 0.0001;  // Alter when performance problems happen
             let prevPoints = points;
             let nextlevelPoints = [];
 
@@ -240,7 +262,7 @@
 
                 context.fillRect(bezierPoint.xCoord, bezierPoint.yCoord, 1, 1);
 
-                tValue += 0.001;
+                tValue += 0.0001;
 
                 prevPoints = points;
             }
