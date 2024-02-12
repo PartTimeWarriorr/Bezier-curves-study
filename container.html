@@ -5,21 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+
         #container {
             width: 400px;
             /* Adjust the width of the container */
             height: 400px;
             /* Adjust the height of the container */
             border: 1px solid black;
-            position: absolute;
+            position: relative;
             margin: auto;
             overflow: hidden;
             /* Ensure points stay within the container */
             background-color: aquamarine;
             user-select: none;
             z-index: 1;
-            display: inline-block;
-            left: 30%;
+            float: left;
+            left: 5%;
         }
 
         #myCanvas {
@@ -51,28 +52,36 @@
             z-index: 3;
         }
 
+        .setPoint
+        {
+            width: 20px;
+            height: 20px;
+            background-color: green;
+            border-radius: 50%;
+            position: relative;
+            z-index: 3;
+        }
+
         #displayContainer
         {
-            width: 400px;
-            height: 400px;
+            width: 800px;
+            height: 800px;
             border: 1px solid black;
-            position: absolute;
+            position: relative;
             margin: auto;
             overflow: hidden;
             background-color:honeydew;
             user-select: none;
             pointer-events: none;
             z-index: 1;
-            display: inline-block;
-            left: 52%;
 
         }
 
         #displayCanvas
         {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 800px;
+            height: 800px;
             margin: auto;
             z-index: 2;
         }
@@ -80,7 +89,7 @@
         #wrapper
         {
             position: relative;
-            padding: 5vw;
+            padding: 10px;
         }
 
         #options
@@ -88,13 +97,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 400px;
+            margin-top: 4px;
         }
 
-        #mySlider
+        /* #mySlider
         {
-            /* display: inline-block; */
-        }
+        } */
     </style>
     <title>Draggable Dots</title>
 </head>
@@ -124,6 +132,10 @@
 
         <input type="range" min="0.0" max="1.0" value="0.5" step="0.01" class="slider" id="mySlider">
 
+        <button onclick="drawHodograph()">
+            Test button
+        </button>
+
     </div>
     
     
@@ -139,6 +151,8 @@
         let slider = document.getElementById("mySlider");
         let polygonVisible = true;
 
+        let displayContainer = document.getElementById("displayContainer");
+
 
         container.addEventListener("click", handleDocumentClick);
 
@@ -153,7 +167,7 @@
 
         function createDiv(x, y) {
             // Create new div element representing our new point
-            var newDiv = document.createElement("div");
+            let newDiv = document.createElement("div");
 
             // Set styles for the new point
             newDiv.style.left = x - 10 + "px"; // TODO: Fix magic numbers
@@ -172,6 +186,7 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 drawLines();
                 drawBezier();
+                // drawHodograph();
 
                 // Insert div
                 container.insertBefore(newDiv, container.childNodes[1]);
@@ -188,6 +203,7 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 drawLines();
                 drawBezier();
+                // drawHodograph();
                 
                 // Insert div in correct poision
                 container.insertBefore(newDiv, container.childNodes[closestPointIndex + 1]);
@@ -228,6 +244,7 @@
 
                 drawLines();
                 drawBezier();
+                // drawHodograph();
             }
 
         }
@@ -371,6 +388,48 @@
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawLines();
             drawBezier();
+        }
+
+        function drawHodograph()
+        {
+            if(points.length < 4)
+            {
+                return;
+            }
+
+            displayContainer.textContent = '';
+
+            let setPoint = {xCoord: 400, yCoord: 400};
+            const hodographPoints = [setPoint];
+
+            let setDiv = document.createElement("div");
+            setDiv.className = "setPoint";
+            // setDiv.style.left = (setPoint.xCoord - 10 - displayContainer.offsetLeft) + "px";
+            // setDiv.style.top = (setPoint.yCoord - 10 - displayContainer.offsetTop) + "px";
+            setDiv.style.left = 400 - 10 + "px"; // Fix magic numbers
+            setDiv.style.top = 400 - 10 + "px";
+
+            displayContainer.appendChild(setDiv);  
+            
+            const pointsAlt = points.slice().reverse(); // Why am I always right...
+
+            
+            for(let i = 0; i < pointsAlt.length - 1; ++i)
+            {
+                let currX = pointsAlt[i + 1].xCoord - pointsAlt[i].xCoord + 400; // Fix magic numbers
+                let currY = pointsAlt[i + 1].yCoord - pointsAlt[i].yCoord + 400;
+
+                let newPoint = {xCoord: currX, yCoord: currY};
+                hodographPoints.push(newPoint);
+                
+                let newDiv = document.createElement("div");
+                newDiv.className = "displayDot";
+                newDiv.style.left = currX - 10 + "px";
+                newDiv.style.top = currY - 10 + "px";
+
+                displayContainer.appendChild(newDiv);
+
+            }
         }
 
         document.addEventListener("mousedown", handleMouseDown);
