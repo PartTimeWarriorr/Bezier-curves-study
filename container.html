@@ -52,14 +52,16 @@
             z-index: 3;
         }
 
-        .setPoint
+        #setPoint
         {
             width: 20px;
             height: 20px;
             background-color: green;
             border-radius: 50%;
-            position: relative;
+            position: absolute;
             z-index: 3;
+            left: 390px;
+            top: 390px;
         }
 
         #displayContainer
@@ -119,7 +121,14 @@
         </div>
     
         <div id="displayContainer">
-    
+
+            <!-- <div id="setPoint">
+
+            </div> -->
+
+            <canvas id="displayCanvas">
+
+            </canvas>
         </div>
     
     </div>
@@ -132,7 +141,7 @@
 
         <input type="range" min="0.0" max="1.0" value="0.5" step="0.01" class="slider" id="mySlider">
 
-        <button onclick="drawHodograph()">
+        <button onclick="drawHodographPoints()">
             Test button
         </button>
 
@@ -142,21 +151,31 @@
 
     <script src="pointsSorting.js"></script>
     <script>
+
+        // Base bezier container
         let currentDot = null;
         let container = document.getElementById('container');
         let canvas = document.getElementById("myCanvas");
         let context = canvas.getContext("2d");
         let points = [];
         let t = 0.5;
+
+        // Options 
         let slider = document.getElementById("mySlider");
         let polygonVisible = true;
 
+        // Hodograph display container
         let displayContainer = document.getElementById("displayContainer");
+        let displayCanvas = document.getElementById("displayCanvas");
+        let displayContext = displayCanvas.getContext("2d");
+        // let setPoint = document.getElementById("setPoint");
+        const hodographPoints = [];
+        let baseHodographDrawn = false;
 
-
+        // Base programme setup
         container.addEventListener("click", handleDocumentClick);
-
         resizeCanvas();
+        resizeDisplayCanvas();
 
         function handleDocumentClick(e) {
             // Check if the clicked element is the container
@@ -209,6 +228,7 @@
                 currentDot.style.left = newX + "px";
                 currentDot.style.top = newY + "px";
                 updatePointPosition(currentDot, newX + 10, newY + 10);
+                updateHodographPoints(currentDot, newX + 10, newY + 10);
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -220,8 +240,8 @@
         }
 
         function updatePointPosition(point, newX, newY) {
-            let index = Array.prototype.indexOf.call(container.children, point); // Returns an index starting from 1, so should be decremented by 1 when adding to array
-            points[index - 1] = { xCoord: newX, yCoord: newY };
+            let index = Array.prototype.indexOf.call(container.children, point); 
+            points[index - 1] = { xCoord: newX, yCoord: newY }; // offset by 1 because of canvas child element
         }
 
         function drawLines() {
@@ -340,6 +360,12 @@
             canvas.height = container.offsetHeight;
         }
 
+        function resizeDisplayCanvas()
+        {
+            displayCanvas.width = displayContainer.offsetWidth;
+            displayCanvas.height = displayContainer.offsetHeight;
+        }
+
 
         function togglePolygon() {
             polygonVisible = !polygonVisible;
@@ -356,46 +382,156 @@
             drawBezier();
         }
 
-        function drawHodograph()
+        // function drawHodograph()
+        // {
+        //     if(points.length < 4)
+        //     {
+        //         return;
+        //     }
+
+        //     displayContainer.textContent = '';
+
+        //     let setPoint = {xCoord: 400, yCoord: 400};
+        //     const hodographPoints = [setPoint];
+
+        //     let setDiv = document.createElement("div");
+        //     setDiv.className = "setPoint";
+        //     // setDiv.style.left = (setPoint.xCoord - 10 - displayContainer.offsetLeft) + "px";
+        //     // setDiv.style.top = (setPoint.yCoord - 10 - displayContainer.offsetTop) + "px";
+        //     setDiv.style.left = 400 - 10 + "px"; // Fix magic numbers
+        //     setDiv.style.top = 400 - 10 + "px";
+
+        //     displayContainer.appendChild(setDiv);  
+            
+        //     const pointsAlt = points.slice(); // Why am I always right...
+
+            
+        //     for(let i = 0; i < pointsAlt.length - 1; ++i)
+        //     {
+        //         let currX = pointsAlt[i + 1].xCoord - pointsAlt[i].xCoord + 400; // Fix magic numbers
+        //         let currY = pointsAlt[i + 1].yCoord - pointsAlt[i].yCoord + 400;
+
+        //         let newPoint = {xCoord: currX, yCoord: currY};
+        //         hodographPoints.push(newPoint);
+                
+        //         let newDiv = document.createElement("div");
+        //         newDiv.className = "displayDot";
+        //         newDiv.style.left = currX - 10 + "px";
+        //         newDiv.style.top = currY - 10 + "px";
+
+        //         displayContainer.appendChild(newDiv);
+
+        //     }
+        // }
+
+        function drawHodographPoints()
         {
+            // Call on added new bezier point
+            if(points.length < 4)
+            {
+                return;
+            }
+            
+            if(baseHodographDrawn)
+            {
+                addNewHodographPoint();
+                return;
+            }
+
+            // After first call should have flag that makes logic call another function instead that just adds a new div and draw its line
+            baseHodographDrawn = true;
+
+            
+            let setX = 400, setY = 400, pointWidthOffset = 10;
+
+            // Create and add set point element (other point positions depend on its position)
+            let setPointDiv = document.createElement("div");
+            setPointDiv.id = "setPoint";
+            setPointDiv.style.left = setX - pointWidthOffset + "px";
+            setPointDiv.style.top = setY - pointWidthOffset + "px";
+
+            displayContainer.appendChild(setPointDiv);
+
+            for(let i = 0; i < points.length - 1; ++i)
+            {
+                let currX = points[i + 1].xCoord - points[i].xCoord + setX;
+                let currY = points[i + 1].yCoord - points[i].yCoord + setY;
+
+                let newPoint = {xCoord: currX, yCoord: currY};
+                hodographPoints.push(newPoint);
+
+                let newDiv = document.createElement("div");
+                newDiv.className = "displayDot";
+                newDiv.style.left = currX - pointWidthOffset + "px";
+                newDiv.style.top = currY - pointWidthOffset + "px";
+
+                displayContainer.appendChild(newDiv);
+            }
+
+
+            drawHodographLines();
+        }
+
+        function addNewHodographPoint()
+        {
+            // Called after the first drawHodographPoints() call to just add a new hodograph div and draw a line to it
+            let len = points.length;
+            let setX = 400, setY = 400, pointWidthOffset = 10;
+
+            let currX = points[len - 1].xCoord - points[len - 1 - 1].xCoord + setX;
+            let currY = points[len - 1].yCoord - points[len - 1 - 1].yCoord + setY;
+
+            let newPoint = {xCoord: currX, yCoord: currY};
+            hodographPoints.push(newPoint);
+
+            let newDiv = document.createElement("div");
+            newDiv.className = "displayDot";
+            newDiv.style.left = currX - pointWidthOffset + "px";
+            newDiv.style.top = currY - pointWidthOffset + "px";
+
+            displayContainer.appendChild(newDiv);
+
+            drawHodographLines();
+        }
+
+        function drawHodographLines()
+        {
+            // Call on drawn hodograph points (or added new point) and updated hodograph point
+            displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+
+            displayContext.beginPath();
+
+            let setX = 400, setY = 400;
+            
+            for(let i = 0; i < hodographPoints.length; ++i)
+            {
+                displayContext.moveTo(setX, setY);
+
+                displayContext.lineTo(hodographPoints[i].xCoord, hodographPoints[i].yCoord);
+                
+                displayContext.stroke();
+            }
+
+        }
+
+        function updateHodographPoints(bezierPoint)
+        {
+            // Call on updated base bezier point 
             if(points.length < 4)
             {
                 return;
             }
 
-            displayContainer.textContent = '';
+            // console.log(Array.prototype.indexOf.call(container.children, bezierPoint));
 
-            let setPoint = {xCoord: 400, yCoord: 400};
-            const hodographPoints = [setPoint];
-
-            let setDiv = document.createElement("div");
-            setDiv.className = "setPoint";
-            // setDiv.style.left = (setPoint.xCoord - 10 - displayContainer.offsetLeft) + "px";
-            // setDiv.style.top = (setPoint.yCoord - 10 - displayContainer.offsetTop) + "px";
-            setDiv.style.left = 400 - 10 + "px"; // Fix magic numbers
-            setDiv.style.top = 400 - 10 + "px";
-
-            displayContainer.appendChild(setDiv);  
-            
-            const pointsAlt = points.slice(); // Why am I always right...
+            let bezierPointIndex = Array.prototype.indexOf.call(container.children, bezierPoint);
 
             
-            for(let i = 0; i < pointsAlt.length - 1; ++i)
-            {
-                let currX = pointsAlt[i + 1].xCoord - pointsAlt[i].xCoord + 400; // Fix magic numbers
-                let currY = pointsAlt[i + 1].yCoord - pointsAlt[i].yCoord + 400;
+        }   
 
-                let newPoint = {xCoord: currX, yCoord: currY};
-                hodographPoints.push(newPoint);
-                
-                let newDiv = document.createElement("div");
-                newDiv.className = "displayDot";
-                newDiv.style.left = currX - 10 + "px";
-                newDiv.style.top = currY - 10 + "px";
-
-                displayContainer.appendChild(newDiv);
-
-            }
+        function drawHodographBezier()
+        {
+            // Called when new hodograph point is added and when hodograph point position is updated
         }
 
         document.addEventListener("mousedown", handleMouseDown);
