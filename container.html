@@ -189,18 +189,19 @@
             let newDiv = document.createElement("div");
 
             // Set styles for the new point
-            newDiv.style.left = x - 10 + "px"; // TODO: Fix magic numbers
-            newDiv.style.top = y - 10 + "px";
+            newDiv.style.left = x - 20 + "px"; // TODO: Fix magic numbers (beshe -10 no sega e -20 i otdolu sushto -10 zashtoto ne znam zashto)
+            newDiv.style.top = y - 20 + "px";
             newDiv.className = "draggableDot";
 
             // Create new point object
-            let newPoint = {xCoord: x, yCoord: y};
+            let newPoint = {xCoord: x - 10, yCoord: y - 10}; // TODO: Fix magic numbers
 
             points.push(newPoint);
 
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawLines();
             drawBezier();
+            drawHodographPoints();
 
             // Add new div to container
             container.appendChild(newDiv);
@@ -235,6 +236,7 @@
                 drawLines();
                 drawBezier();
                 // drawHodograph();
+                drawHodographLines();
             }
 
         }
@@ -522,10 +524,49 @@
                 return;
             }
 
-            // console.log(Array.prototype.indexOf.call(container.children, bezierPoint));
+            let setX = 400, setY = 400, pointWidthOffset = 10;
 
-            let bezierPointIndex = Array.prototype.indexOf.call(container.children, bezierPoint);
+            let bezierPointDivIndex = Array.prototype.indexOf.call(container.children, bezierPoint);
+            console.log(bezierPointDivIndex - 2);
 
+            if(bezierPointDivIndex === 1)
+            {
+
+                hodographPoints[bezierPointDivIndex - 1].xCoord = points[bezierPointDivIndex].xCoord - points[bezierPointDivIndex - 1].xCoord + setX;
+                hodographPoints[bezierPointDivIndex - 1].yCoord = points[bezierPointDivIndex].yCoord - points[bezierPointDivIndex - 1].yCoord + setY;            
+            
+                displayContainer.children[bezierPointDivIndex + 1].style.left =  hodographPoints[bezierPointDivIndex - 1].xCoord - pointWidthOffset + "px";
+                displayContainer.children[bezierPointDivIndex + 1].style.top =  hodographPoints[bezierPointDivIndex - 1].yCoord - pointWidthOffset + "px";
+                
+            }
+            else if(container.children[bezierPointDivIndex] === container.lastChild)
+            {
+
+                hodographPoints[bezierPointDivIndex - 2].xCoord = points[bezierPointDivIndex - 1].xCoord - points[bezierPointDivIndex - 2].xCoord + setX;
+                hodographPoints[bezierPointDivIndex - 2].yCoord = points[bezierPointDivIndex - 1].yCoord - points[bezierPointDivIndex - 2].yCoord + setY;       
+
+                displayContainer.children[bezierPointDivIndex].style.left = hodographPoints[bezierPointDivIndex - 2].xCoord - pointWidthOffset + "px";
+                displayContainer.children[bezierPointDivIndex].style.top = hodographPoints[bezierPointDivIndex - 2].yCoord - pointWidthOffset + "px";
+            }
+            else
+            {
+
+                hodographPoints[bezierPointDivIndex - 1].xCoord = points[bezierPointDivIndex].xCoord - points[bezierPointDivIndex - 1].xCoord + setX;
+                hodographPoints[bezierPointDivIndex - 1].yCoord = points[bezierPointDivIndex].yCoord - points[bezierPointDivIndex - 1].yCoord + setY;
+
+                hodographPoints[bezierPointDivIndex - 2].xCoord = points[bezierPointDivIndex - 1].xCoord - points[bezierPointDivIndex - 2].xCoord + setX;
+                hodographPoints[bezierPointDivIndex - 2].yCoord = points[bezierPointDivIndex - 1].yCoord - points[bezierPointDivIndex - 2].yCoord + setY;
+
+
+                // divs
+                displayContainer.children[bezierPointDivIndex + 1].style.left =  hodographPoints[bezierPointDivIndex - 1].xCoord - pointWidthOffset + "px";
+                displayContainer.children[bezierPointDivIndex + 1].style.top =  hodographPoints[bezierPointDivIndex - 1].yCoord - pointWidthOffset + "px";
+
+                displayContainer.children[bezierPointDivIndex].style.left = hodographPoints[bezierPointDivIndex - 2].xCoord - pointWidthOffset + "px";
+                displayContainer.children[bezierPointDivIndex].style.top = hodographPoints[bezierPointDivIndex - 2].yCoord - pointWidthOffset + "px";
+            }
+
+            
             
         }   
 
