@@ -177,45 +177,15 @@
             // Create new point object
             let newPoint = {xCoord: x, yCoord: y};
 
-            if(points.length === 0)
-            {
-                // Add point object to empty array
-                points.push(newPoint);
+            points.push(newPoint);
 
-                // Update canvas
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                drawLines();
-                drawBezier();
-                // drawHodograph();
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawLines();
+            drawBezier();
 
-                // Insert div
-                container.insertBefore(newDiv, container.childNodes[1]);
+            // Add new div to container
+            container.appendChild(newDiv);
 
-            }
-            else
-            {
-                // Find closest point and insert new point after it in the array
-                let closestPointIndex = findClosestPointIndex(points, newPoint); 
-                const updatedPointsArr = [...points.slice(0, closestPointIndex), newPoint, ...points.slice(closestPointIndex)];
-                points = updatedPointsArr;
-
-                // Update canvas
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                drawLines();
-                drawBezier();
-                // drawHodograph();
-                
-                // Insert div in correct poision
-                container.insertBefore(newDiv, container.childNodes[closestPointIndex + 1]);
-            }
-
-
-            // Add the new div to the container
-
-        }
-
-        function insertAfter(newNode, existingNode) {
-            existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
         }
 
         function handleMouseDown(e) {
@@ -251,7 +221,7 @@
 
         function updatePointPosition(point, newX, newY) {
             let index = Array.prototype.indexOf.call(container.children, point); // Returns an index starting from 1, so should be decremented by 1 when adding to array
-            points[index] = { xCoord: newX, yCoord: newY };
+            points[index - 1] = { xCoord: newX, yCoord: newY };
         }
 
         function drawLines() {
@@ -370,10 +340,6 @@
             canvas.height = container.offsetHeight;
         }
 
-        // function hideCanvas()
-        // {
-        //     canvas.hidden = !canvas.hidden;
-        // }
 
         function togglePolygon() {
             polygonVisible = !polygonVisible;
@@ -411,7 +377,7 @@
 
             displayContainer.appendChild(setDiv);  
             
-            const pointsAlt = points.slice().reverse(); // Why am I always right...
+            const pointsAlt = points.slice(); // Why am I always right...
 
             
             for(let i = 0; i < pointsAlt.length - 1; ++i)
