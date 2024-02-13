@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        
+        #wrapper
+        {
+            position: relative;
+            padding: 10px;
+        }
 
         #container {
             width: 400px;
@@ -41,29 +47,7 @@
             cursor: grab;
             z-index: 3;
         }
-
-        .displayDot
-        {
-            width: 20px;
-            height: 20px;
-            background-color: blue;
-            border-radius: 50%;
-            position: absolute;
-            z-index: 3;
-        }
-
-        #setPoint
-        {
-            width: 20px;
-            height: 20px;
-            background-color: green;
-            border-radius: 50%;
-            position: absolute;
-            z-index: 3;
-            left: 390px;
-            top: 390px;
-        }
-
+        
         #displayContainer
         {
             width: 800px;
@@ -88,10 +72,26 @@
             z-index: 2;
         }
 
-        #wrapper
+        .displayDot
         {
-            position: relative;
-            padding: 10px;
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 3;
+        }
+
+        #setPoint
+        {
+            width: 20px;
+            height: 20px;
+            background-color: green;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 3;
+            left: 390px;
+            top: 390px;
         }
 
         #options
@@ -122,10 +122,6 @@
     
         <div id="displayContainer">
 
-            <!-- <div id="setPoint">
-
-            </div> -->
-
             <canvas id="displayCanvas">
 
             </canvas>
@@ -141,8 +137,8 @@
 
         <input type="range" min="0.0" max="1.0" value="0.5" step="0.01" class="slider" id="mySlider">
 
-        <button onclick="drawHodographPoints()">
-            Test button
+        <button onclick="toggleHodographPolygon()">
+            Toggle HodographPolygon
         </button>
 
     </div>
@@ -163,12 +159,12 @@
         // Options 
         let slider = document.getElementById("mySlider");
         let polygonVisible = true;
+        let hodographPolygonVisible = true;
 
         // Hodograph display container
         let displayContainer = document.getElementById("displayContainer");
         let displayCanvas = document.getElementById("displayCanvas");
         let displayContext = displayCanvas.getContext("2d");
-        // let setPoint = document.getElementById("setPoint");
         const hodographPoints = [];
         let baseHodographDrawn = false;
 
@@ -235,8 +231,8 @@
 
                 drawLines();
                 drawBezier();
-                // drawHodograph();
                 drawHodographLines();
+                // drawHodographBezier();
             }
 
         }
@@ -308,7 +304,7 @@
                 return;
             }
 
-            let tValue = 0.0001;  // Alter when performance problems happen
+            let tValue = 0.001;  // Alter when performance problems happen
             let prevPoints = points;
             let nextlevelPoints = [];
 
@@ -317,7 +313,7 @@
             while (tValue < 1) {
                 do {
                     for (let i = 0; i < prevPoints.length - 1; ++i) {
-                        // let newPoint = {xCoord: prevPoints[i].xCoord * (1 - tValue) + prevPoints[i + 1].xCoord * tValue, yCoord: prevPoints[i].yCoord * (1 - tValue) + prevPoints[i + 1].yCoord * tValue};
+
                         let newPoint = calculateNewBezierPoint(prevPoints[i], prevPoints[i + 1], tValue);
                         nextlevelPoints.push(newPoint);
 
@@ -328,12 +324,11 @@
 
                 } while (prevPoints.length > 2);
 
-                // let bezierPoint = {xCoord: prevPoints[0].xCoord * (1 - tValue) + prevPoints[1].xCoord * tValue, yCoord: prevPoints[0].yCoord * (1 - tValue) + prevPoints[1].yCoord * tValue};
                 let bezierPoint = calculateNewBezierPoint(prevPoints[0], prevPoints[1], tValue);
 
                 context.fillRect(bezierPoint.xCoord, bezierPoint.yCoord, 1, 1);
 
-                tValue += 0.0001;
+                tValue += 0.001;
 
                 prevPoints = points;
             }
@@ -377,54 +372,21 @@
             drawBezier();
         }
 
+        function toggleHodographPolygon()
+        {
+            hodographPolygonVisible = !hodographPolygonVisible;
+
+            displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+            drawHodographLines();
+            drawHodographBezier();
+        }
+
         slider.oninput = function () {
             t = this.value;
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawLines();
             drawBezier();
         }
-
-        // function drawHodograph()
-        // {
-        //     if(points.length < 4)
-        //     {
-        //         return;
-        //     }
-
-        //     displayContainer.textContent = '';
-
-        //     let setPoint = {xCoord: 400, yCoord: 400};
-        //     const hodographPoints = [setPoint];
-
-        //     let setDiv = document.createElement("div");
-        //     setDiv.className = "setPoint";
-        //     // setDiv.style.left = (setPoint.xCoord - 10 - displayContainer.offsetLeft) + "px";
-        //     // setDiv.style.top = (setPoint.yCoord - 10 - displayContainer.offsetTop) + "px";
-        //     setDiv.style.left = 400 - 10 + "px"; // Fix magic numbers
-        //     setDiv.style.top = 400 - 10 + "px";
-
-        //     displayContainer.appendChild(setDiv);  
-            
-        //     const pointsAlt = points.slice(); // Why am I always right...
-
-            
-        //     for(let i = 0; i < pointsAlt.length - 1; ++i)
-        //     {
-        //         let currX = pointsAlt[i + 1].xCoord - pointsAlt[i].xCoord + 400; // Fix magic numbers
-        //         let currY = pointsAlt[i + 1].yCoord - pointsAlt[i].yCoord + 400;
-
-        //         let newPoint = {xCoord: currX, yCoord: currY};
-        //         hodographPoints.push(newPoint);
-                
-        //         let newDiv = document.createElement("div");
-        //         newDiv.className = "displayDot";
-        //         newDiv.style.left = currX - 10 + "px";
-        //         newDiv.style.top = currY - 10 + "px";
-
-        //         displayContainer.appendChild(newDiv);
-
-        //     }
-        // }
 
         function drawHodographPoints()
         {
@@ -498,6 +460,10 @@
 
         function drawHodographLines()
         {
+            if(!hodographPolygonVisible)
+            {
+                return;
+            }
             // Call on drawn hodograph points (or added new point) and updated hodograph point
             displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
 
@@ -514,6 +480,8 @@
                 displayContext.stroke();
             }
 
+            drawHodographBezier();
+
         }
 
         function updateHodographPoints(bezierPoint)
@@ -527,7 +495,6 @@
             let setX = 400, setY = 400, pointWidthOffset = 10;
 
             let bezierPointDivIndex = Array.prototype.indexOf.call(container.children, bezierPoint);
-            console.log(bezierPointDivIndex - 2);
 
             if(bezierPointDivIndex === 1)
             {
@@ -573,6 +540,40 @@
         function drawHodographBezier()
         {
             // Called when new hodograph point is added and when hodograph point position is updated
+
+            if(hodographPoints.length < 3)
+            {
+                return;
+            }
+
+            let tValue = 0.001;
+            let prevPoints = hodographPoints;
+            let nextLevelPoints = [];
+            
+            while(tValue < 1)
+            {
+                do {
+                    for (let i = 0; i < prevPoints.length - 1; ++i) {
+
+                        let newPoint = calculateNewBezierPoint(prevPoints[i], prevPoints[i + 1], tValue);
+                        nextLevelPoints.push(newPoint);
+
+                    }
+
+                    prevPoints = nextLevelPoints;
+                    nextLevelPoints = [];
+
+                } while (prevPoints.length > 2);
+
+
+                let bezierPoint = calculateNewBezierPoint(prevPoints[0], prevPoints[1], tValue);
+
+                displayContext.fillRect(bezierPoint.xCoord, bezierPoint.yCoord, 1, 1);
+
+                tValue += 0.001;
+
+                prevPoints = hodographPoints;
+            }
         }
 
         document.addEventListener("mousedown", handleMouseDown);
