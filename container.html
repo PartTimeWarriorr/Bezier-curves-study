@@ -359,7 +359,17 @@
                 nextLevelPoints = [];
 
             } while (prevPoints.length > 2);
+            
+            if(prevPoints.length === 2)
+            {
+                // // Draw square at the point on the bezier curve
+                let newPoint = calculateNewPoint(prevPoints[0], prevPoints[1]);
 
+                context.strokeStyle = "Blue";
+                context.strokeRect(newPoint.xCoord - 7.5, newPoint.yCoord - 7.5, 15, 15);
+                context.strokeStyle = "Black";
+            }
+                
         }
 
         function drawBezier() {
