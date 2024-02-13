@@ -143,9 +143,6 @@
 
     </div>
     
-    
-
-    <script src="pointsSorting.js"></script>
     <script>
 
         // Base bezier container
@@ -473,13 +470,16 @@
             
             for(let i = 0; i < hodographPoints.length; ++i)
             {
+
                 displayContext.moveTo(setX, setY);
 
                 displayContext.lineTo(hodographPoints[i].xCoord, hodographPoints[i].yCoord);
                 
                 displayContext.stroke();
+                // canvas_arrow(displayContext, setX, setY, hodographPoints[i].xCoord, hodographPoints[i].yCoord, 1);
             }
 
+            drawHodographPolygon();
             drawHodographBezier();
 
         }
@@ -537,6 +537,25 @@
             
         }   
 
+        function drawHodographPolygon()
+        {
+            displayContext.beginPath();
+
+            for(let i = 0; i < hodographPoints.length; ++i)
+            {
+                if(i === 0)
+                {
+                    displayContext.moveTo(hodographPoints[i].xCoord, hodographPoints[i].yCoord);
+                }
+                else
+                {
+                    displayContext.lineTo(hodographPoints[i].xCoord, hodographPoints[i].yCoord);
+                }
+
+                displayContext.stroke();
+            }
+        }
+
         function drawHodographBezier()
         {
             // Called when new hodograph point is added and when hodograph point position is updated
@@ -575,6 +594,36 @@
                 prevPoints = hodographPoints;
             }
         }
+
+        // function canvas_arrow(ctx, fromX, fromY, toX, toY, r){
+        //     let centerX = toX;
+        //     let centerY = toY;
+
+        //     let angle, x, y;
+
+        //     ctx.beginPath();
+
+        //     angle = Math.atan2(toY - fromY,toX - fromX);
+        //     x = r * Math.cos(angle) + centerX;
+        //     y = r * Math.sin(angle) + centerY;
+
+        //     ctx.moveTo(x, y);
+
+        //     angle += (1/3) * (2 * Math.PI)
+        //     x = r * Math.cos(angle) + centerX;
+        //     y = r * Math.sin(angle) + centerY;
+
+        //     ctx.lineTo(x, y);
+
+        //     angle += (1/3)*(2*Math.PI)
+        //     x = r * Math.cos(angle) + centerX;
+        //     y = r * Math.sin(angle) + centerY;
+
+        //     ctx.lineTo(x, y);
+
+        //     ctx.stroke();
+        // }
+
 
         document.addEventListener("mousedown", handleMouseDown);
         document.addEventListener("mousemove", handleMouseMove);
