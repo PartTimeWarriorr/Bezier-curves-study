@@ -192,6 +192,7 @@
             points.push(newPoint);
 
             context.clearRect(0, 0, canvas.width, canvas.height);
+            displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
             drawLines();
             drawBezier();
             drawHodographPoints();
@@ -214,6 +215,7 @@
 
         function handleMouseMove(e) {
             if (currentDot) {
+                
                 var newX = e.clientX - offsetX;
                 var newY = e.clientY - offsetY;
                 // Ensure the dot stays within the container
@@ -225,11 +227,12 @@
                 updateHodographPoints(currentDot, newX + 10, newY + 10);
 
                 context.clearRect(0, 0, canvas.width, canvas.height);
+                displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
 
                 drawLines();
                 drawBezier();
                 drawHodographLines();
-                // drawHodographBezier();
+                drawHodographBezier();
             }
 
         }
@@ -305,7 +308,6 @@
             let prevPoints = points;
             let nextlevelPoints = [];
 
-            // context.beginPath();
 
             while (tValue < 1) {
                 do {
@@ -431,6 +433,7 @@
 
 
             drawHodographLines();
+            drawHodographBezier();
         }
 
         function addNewHodographPoint()
@@ -453,6 +456,7 @@
             displayContainer.appendChild(newDiv);
 
             drawHodographLines();
+            drawHodographBezier();
         }
 
         function drawHodographLines()
@@ -462,7 +466,6 @@
                 return;
             }
             // Call on drawn hodograph points (or added new point) and updated hodograph point
-            displayContext.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
 
             displayContext.beginPath();
 
@@ -480,7 +483,6 @@
             }
 
             drawHodographPolygon();
-            drawHodographBezier();
 
         }
 
