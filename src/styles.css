@@ -1,0 +1,124 @@
+
+#wrapper
+{
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+}
+
+#leftPanel
+{
+    display: flex;
+    flex-direction: column;
+}
+
+#container 
+{
+    width: 400px;
+    height: 400px;
+    border: 1px solid black;
+    position: relative;
+    margin: auto;
+    overflow: hidden;
+    background-color: aquamarine;
+    user-select: none;
+    z-index: 1;
+    float: left;
+    left: 5%;
+}
+
+#myCanvas 
+{
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: auto;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.draggableDot 
+{
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    cursor: grab;
+    z-index: 3;
+}
+
+#displayContainer
+{
+    width: 800px;
+    height: 800px;
+    border: 1px solid black;
+    position: relative;
+    margin: auto;
+    overflow: hidden;
+    background-color:honeydew;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1;
+
+}
+
+#displayCanvas
+{
+    position: relative;
+    width: 800px;
+    height: 800px;
+    margin: auto;
+    z-index: 2;
+}
+
+.displayDot
+{
+    width: 20px;
+    height: 20px;
+    background-color: blue;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 3;
+}
+
+#setPoint
+{
+    width: 20px;
+    height: 20px;
+    background-color: green;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 3;
+    left: 390px;
+    top: 390px;
+}
+
+#options
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.buttonStyle
+{
+    padding: 10px;
+    border: 1px solid black;
+}
+
+#inputContainer
+{
+    display: flex;
+    padding: 10px;
+    flex-direction: column;
+}
+
+#sliderOutput
+{
+    font-size: large;
+    font-weight: 900;
+    font-family: 'Courier New', Courier, monospace;
+}
